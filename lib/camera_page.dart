@@ -8,7 +8,7 @@ import 'package:liveness/speakwords.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CameraPage extends StatefulWidget {
-  const CameraPage({Key? key}) : super(key: key);
+  const CameraPage({super.key});
 
   @override
   State<CameraPage> createState() => _CameraPageState();
@@ -77,7 +77,7 @@ class _CameraPageState extends State<CameraPage> {
                 ),
               );
             } else if (state is FaceDetectionErrorState) {
-              final sbar =
+              const sbar =
                   SnackBar(content: Text('Failed to capture image, Try again'));
 
               ScaffoldMessenger.of(context)
@@ -89,7 +89,7 @@ class _CameraPageState extends State<CameraPage> {
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Camera Page'),
+          title: const Text('Camera Page'),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -103,23 +103,15 @@ class _CameraPageState extends State<CameraPage> {
                 left: MediaQuery.of(context).size.width * 0.25,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final XFile? photo = await context
+                    final XFile photo = await context
                         .read<CameraControllerCubit>()
                         .state!
                         .takePicture();
-                    if (photo != null) {
-                      context
-                          .read<FaceDetectionCubit>()
-                          .detectFace(file: photo);
-                    } else {
-                      final sbar =
-                          SnackBar(content: Text('Failed to Capture image'));
-                      ScaffoldMessenger.of(context)
-                        ..hideCurrentSnackBar()
-                        ..showSnackBar(sbar);
-                    }
-                  },
-                  child: Text('Take Picture'),
+                    context
+                        .read<FaceDetectionCubit>()
+                        .detectFace(file: photo);
+                                    },
+                  child: const Text('Take Picture'),
                 ),
               ),
             ],

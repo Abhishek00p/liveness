@@ -5,7 +5,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:liveness/blocs/cameraController_cubit.dart';
 import 'package:liveness/blocs/isListening_cubit.dart';
 import 'package:liveness/blocs/spoken_number_cubit.dart';
 import 'package:liveness/blocs/user_location_cubit.dart';
@@ -50,13 +49,13 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.always ||
           permission == LocationPermission.whileInUse) {
-        final _pos = await Geolocator.getCurrentPosition();
+        final pos = await Geolocator.getCurrentPosition();
         context
             .read<UserLocation>()
-            .changeValue('GPS ${_pos.latitude},${_pos.longitude}');
+            .changeValue('GPS ${pos.latitude},${pos.longitude}');
         return;
       } else {
-        final sbar = SnackBar(content: Text('Location is disabled'));
+        const sbar = SnackBar(content: Text('Location is disabled'));
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(sbar);
@@ -68,7 +67,7 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        final sbar = SnackBar(content: Text('Location permission is denied'));
+        const sbar = SnackBar(content: Text('Location permission is denied'));
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(sbar);
@@ -77,17 +76,17 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      final sbar = SnackBar(
+      const sbar = SnackBar(
           content: Text('Kindly enable location permission from setting'));
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(sbar);
       return;
     }
-    final _pos = await Geolocator.getCurrentPosition();
+    final pos = await Geolocator.getCurrentPosition();
     context
         .read<UserLocation>()
-        .changeValue('GPS ${_pos.latitude},${_pos.longitude}');
+        .changeValue('GPS ${pos.latitude},${pos.longitude}');
   }
 
   bool isPassed = false;
@@ -96,7 +95,7 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Speak Number to Test Liveness'),
+        title: const Text('Speak Number to Test Liveness'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -111,23 +110,23 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
                 fit: BoxFit.fill,
               ),
             ),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             Text(context.watch<UserLocation>().state),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             BlocBuilder<SpokenNumber, String>(
               builder: (context, state) {
                 return Row(
                   children: [
                     Text(state),
-                    SizedBox(
+                    const SizedBox(
                       width: 15,
                     ),
                     isPassed
-                        ? Text(
+                        ? const Text(
                             'PASSED',
                             style: TextStyle(color: Colors.green),
                           )
-                        : Text(
+                        : const Text(
                             'Failed',
                             style: TextStyle(color: Colors.red),
                           ),
@@ -135,9 +134,9 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
                 );
               },
             ),
-            SizedBox(height: 10.0),
-            Text('speak a number within 5 sec after tapped on Start test'),
-            SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
+            const Text('speak a number within 5 sec after tapped on Start test'),
+            const SizedBox(height: 20.0),
             BlocBuilder<IsAudioListening, bool>(
               builder: (context, state) {
                 return ElevatedButton(
@@ -157,11 +156,11 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
   }
 
   startListening() async {
-    final _speech = SpeechToText();
-    if (await _speech.initialize()) {
+    final speech = SpeechToText();
+    if (await speech.initialize()) {
       debugPrint('listening started');
       context.read<IsAudioListening>().changeValue(true);
-      _speech.listen(
+      speech.listen(
         listenOptions: SpeechListenOptions(
             partialResults: false,
             cancelOnError: true,
@@ -172,7 +171,7 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
         onResult: (result) => _processResult(result),
       );
       await Future.delayed(
-          Duration(
+          const Duration(
             seconds: 5,
           ), () {
         context.read<IsAudioListening>().changeValue(false);
@@ -188,7 +187,7 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
     // context.read<IsAudioListening>().changeValue(false);
 
     if (result.recognizedWords.isEmpty) {
-      final sbar = SnackBar(content: Text('Failed to recognize spoken number'));
+      const sbar = SnackBar(content: Text('Failed to recognize spoken number'));
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(sbar);
@@ -212,7 +211,7 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
         isPassed = true;
       });
     } else {
-      final sbar =
+      const sbar =
           SnackBar(content: Text('Please speak a number less then 3 digit'));
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()

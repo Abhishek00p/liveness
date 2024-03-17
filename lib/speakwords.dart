@@ -47,11 +47,21 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      final sbar = SnackBar(content: Text('Location is disabled'));
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(sbar);
-      return;
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse) {
+        final _pos = await Geolocator.getCurrentPosition();
+        context
+            .read<UserLocation>()
+            .changeValue('GPS ${_pos.latitude},${_pos.longitude}');
+        return;
+      } else {
+        final sbar = SnackBar(content: Text('Location is disabled'));
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(sbar);
+        return;
+      }
     }
 
     permission = await Geolocator.checkPermission();
@@ -79,6 +89,8 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
         .read<UserLocation>()
         .changeValue('GPS ${_pos.latitude},${_pos.longitude}');
   }
+
+  bool isPassed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -110,12 +122,15 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
                     SizedBox(
                       width: 15,
                     ),
-                    state.isNotEmpty
+                    isPassed
                         ? Text(
                             'PASSED',
                             style: TextStyle(color: Colors.green),
                           )
-                        : SizedBox.shrink(),
+                        : Text(
+                            'Failed',
+                            style: TextStyle(color: Colors.red),
+                          ),
                   ],
                 );
               },
@@ -123,17 +138,17 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
             SizedBox(height: 10.0),
             Text('speak a number within 5 sec after tapped on Start test'),
             SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: context.read<IsAudioListening>().state
-                  ? () {}
-                  : () async {
-                      startListening();
-                    },
-              child: BlocBuilder<IsAudioListening, bool>(
-                builder: (context, state) {
-                  return Text(state ? 'listening...' : 'Start Audio Test');
-                },
-              ),
+            BlocBuilder<IsAudioListening, bool>(
+              builder: (context, state) {
+                return ElevatedButton(
+                  onPressed: state
+                      ? () {}
+                      : () async {
+                          startListening();
+                        },
+                  child: Text(state ? 'listening...' : 'Start Audio Test'),
+                );
+              },
             ),
           ],
         ),
@@ -179,6 +194,9 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
         ..showSnackBar(sbar);
       debugPrint('got u');
       context.read<IsAudioListening>().changeValue(false);
+      setState(() {
+        isPassed = false;
+      });
       return;
     }
 
@@ -190,12 +208,21 @@ class _SpeakWordsPageState extends State<SpeakWordsPage> {
       context
           .read<SpokenNumber>()
           .changeValue('you spoke : ${numbers.firstOrNull ?? 'not detected'}');
+      setState(() {
+        isPassed = true;
+      });
     } else {
       final sbar =
           SnackBar(content: Text('Please speak a number less then 3 digit'));
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(sbar);
+      context
+          .read<SpokenNumber>()
+          .changeValue('you spoke : ${result.recognizedWords}');
+      setState(() {
+        isPassed = false;
+      });
     }
 
     context.read<IsAudioListening>().changeValue(false);

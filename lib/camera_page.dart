@@ -76,6 +76,13 @@ class _CameraPageState extends State<CameraPage> {
                   ),
                 ),
               );
+            } else if (state is FaceDetectionErrorState) {
+              final sbar =
+                  SnackBar(content: Text('Failed to capture image, Try again'));
+
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(sbar);
             }
           },
         ),

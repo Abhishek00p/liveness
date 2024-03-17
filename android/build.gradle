@@ -4,8 +4,6 @@ allprojects {
         mavenCentral()
     }
 }
-ext.kotlin_version = '1.4.32'
-
 
 rootProject.buildDir = '../build'
 subprojects {
